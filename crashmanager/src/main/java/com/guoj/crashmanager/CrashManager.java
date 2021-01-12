@@ -27,10 +27,10 @@ import java.util.Date;
  * @author guoj
  */
 public class CrashManager {
-    private static CrashManager instance;
     private static Context mContext;
-    private String TAG = "CrashManager";
-
+    private final String TAG = "CrashManager";
+    private boolean saveErrorInfo = true;
+    private boolean blockANR= true;
     private CrashManager() {
     }
 
@@ -44,17 +44,26 @@ public class CrashManager {
         return CrashManagerInstance.instance;
     }
 
-    public void init() {
+    public CrashManager init() {
         Thread.setDefaultUncaughtExceptionHandler((t, e) -> {
             Log.i(TAG, "UncaughtException:" + e);
             e.printStackTrace();
-
-            saveErrorToFile(e);
+            if (saveErrorInfo) {
+                saveErrorToFile(e);
+            }
             //处理主线程的crash，让应用不再无响应或异常退出
-            if (t == Looper.getMainLooper().getThread()) {
-                handleMainThread(e);
+            if (blockANR){
+                if (t == Looper.getMainLooper().getThread()) {
+                    handleMainThread(e);
+                }
             }
         });
+        return this;
+    }
+
+    public CrashManager saveErrorInfo(boolean saveError) {
+        this.saveErrorInfo = saveError;
+        return this;
     }
 
     private void handleMainThread(Throwable e) {
@@ -64,7 +73,9 @@ public class CrashManager {
             } catch (Throwable e1) {
                 Log.i(TAG, "UncaughtException:" + e1);
                 e1.printStackTrace();
-                saveErrorToFile(e1);
+                if (saveErrorInfo) {
+                    saveErrorToFile(e1);
+                }
             }
         }
     }
