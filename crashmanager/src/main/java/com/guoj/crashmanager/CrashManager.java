@@ -60,7 +60,10 @@ public class CrashManager {
         });
         return this;
     }
-
+    public CrashManager blockANR(boolean blockANR){
+        this.blockANR=blockANR;
+        return this;
+    }
     public CrashManager saveErrorInfo(boolean saveError) {
         this.saveErrorInfo = saveError;
         return this;
